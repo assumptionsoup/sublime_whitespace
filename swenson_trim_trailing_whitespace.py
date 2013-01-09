@@ -9,9 +9,11 @@
 
 from difflib import SequenceMatcher
 
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 
-patterns = ['swenson@simple.com', 'chris@caswenson.com']
+options = sublime.load_settings(
+    'swenson_trim_trailing_whitespace.sublime-settings')
 snapshots = {}
 
 class SwensonTrimTrailingWhiteSpace(sublime_plugin.EventListener):
@@ -19,9 +21,20 @@ class SwensonTrimTrailingWhiteSpace(sublime_plugin.EventListener):
   def on_load(self, view):
     snapshots[view.id()] = view.substr(sublime.Region(0, view.size()))
 
+  on_clone = on_load
+  on_new = on_load
+
   def on_pre_save(self, view):
-    # Trim whitespace on any new files.
-    old = snapshots[view.id()].split('\n')
+    # Trim whitespace on any new files.  Note that if we don't have any
+    # snapshot, then either the plugin has failed or it's a new document.
+    oldText = snapshots.get(view.id())
+    if oldText is None:
+      # We don't have a snapshot.  This is an exceptional case, so just put
+      # the current contents as the snapshot and do nothing.
+      snapshots[view.id()] = view.substr(sublime.Region(0, view.size()))
+      return
+
+    old = oldText.split('\n')
     new = view.substr(sublime.Region(0, view.size())).split('\n')
     # Remove the line numbers that were present before.
     new_lines = set(range(len(new)))
@@ -35,11 +48,12 @@ class SwensonTrimTrailingWhiteSpace(sublime_plugin.EventListener):
       for line_no in new_lines:
         pt = view.text_point(line_no, 0)
         old_line = view.line(pt)
-        new_line_text = view.substr(view.line(pt)).rstrip()
+        new_line_text = view.substr(old_line).rstrip()
         view.replace(edit, old_line, new_line_text)
       view.end_edit(edit)
 
     # Trim all whitespace on my files.
+    patterns = options.get('owner_patterns', [])
     if any(view.find(pattern, 0, sublime.IGNORECASE) for pattern in patterns):
       trailing_white_space = view.find_all("[\t ]+$")
       trailing_white_space.reverse()

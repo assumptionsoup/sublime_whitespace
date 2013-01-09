@@ -1,0 +1,6 @@
+{
+    //A list of strings; if any of these are contained in the file when it
+    //is saved, then all trailing whitespace will be trimmed, rather than
+    //only modified lines.  Leave an empty array to disable this feature.
+    "owner_patterns": []
+}

@@ -3,7 +3,7 @@ sublime_whitespace
 
 Only trim trailing whitespace on new lines.
 
-Or if the file contains my email address.
+Or if the file contains a configurable pattern, usually your email address.
 
 The easiest way to install this: go to Tools -> New Plugin,
 copy the text below into that new plugin, add your email addresses
