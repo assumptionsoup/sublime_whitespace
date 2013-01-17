@@ -58,7 +58,9 @@ class SwensonTrimTrailingWhiteSpace(sublime_plugin.EventListener):
 
       if replacements:
         edit = view.begin_edit()
-        for old_line, new_line_text in replacements:
+        # Note that we replace later in the file first, since we're changing
+        # the number of characters in each line.
+        for old_line, new_line_text in reversed(replacements):
           view.replace(edit, old_line, new_line_text)
         view.end_edit(edit)
 
